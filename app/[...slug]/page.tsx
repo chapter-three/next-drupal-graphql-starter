@@ -70,14 +70,15 @@ type NodePageParams = {
   slug: string[]
 }
 type NodePageProps = {
-  params: NodePageParams
-  searchParams: { [key: string]: string | string[] | undefined }
+  params: Promise<NodePageParams>
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }
 
 export async function generateMetadata(
-  { params: { slug } }: NodePageProps,
+  { params }: NodePageProps,
   _: ResolvingMetadata
 ): Promise<Metadata> {
+  const slug = (await params).slug
   let node
   try {
     node = await getNode(slug)
@@ -118,7 +119,9 @@ export async function generateStaticParams(): Promise<NodePageParams[]> {
   ].map(({ path }) => ({ slug: path.split("/").filter(Boolean) }))
 }
 
-export default async function Page({ params: { slug } }: NodePageProps) {
+export default async function Page({ params }: NodePageProps) {
+  const slug = (await params).slug
+
   const draft = await draftMode()
   const isDraftMode = draft.isEnabled
 
